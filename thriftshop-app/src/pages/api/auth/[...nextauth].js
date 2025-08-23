@@ -20,7 +20,7 @@ export default NextAuth({
 
         if (user && bcrypt.compareSync(credentials.password, user.passwordHash)) {
           return {
-            id: user._id.toString(), 
+            id: user._id.toString(),
             name: user.name,
             email: user.email,
             role: user.role,
@@ -30,7 +30,28 @@ export default NextAuth({
       },
     }),
   ],
+
   callbacks: {
+    async signIn({ user, account, profile }) {
+      await dbConnect();
+
+      let existingUser = await User.findOne({ email: user.email });
+
+      if (!existingUser) {
+        existingUser = await User.create({
+          name: user.name || profile?.name,
+          email: user.email,
+          passwordHash: "", 
+          role: "user",    
+        });
+      }
+
+      user.id = existingUser._id.toString();
+      user.role = existingUser.role;
+
+      return true;
+    },
+
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
@@ -38,6 +59,7 @@ export default NextAuth({
       }
       return token;
     },
+
     async session({ session, token }) {
       if (token) {
         session.user.id = token.id;
@@ -46,5 +68,6 @@ export default NextAuth({
       return session;
     },
   },
+
   secret: process.env.NEXTAUTH_SECRET,
 });

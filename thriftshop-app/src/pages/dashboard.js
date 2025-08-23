@@ -21,7 +21,7 @@ export default function Dashboard() {
               <h2 className="text-2xl font-bold text-gray-800 mb-2">Authentication Required</h2>
               <p className="text-gray-600 mb-6">Please log in to access your shopping dashboard and track your orders.</p>
               <Link 
-                href="/api/auth/signin" 
+                href="/login" 
                 className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-300 inline-flex items-center"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -47,7 +47,6 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gray-50">
       <Header />
       
-      {/* Dashboard Header */}
       <div className="bg-gradient-to-r from-purple-600 to-indigo-700 text-white py-8">
         <div className="container mx-auto px-6">
           <div className="flex flex-col md:flex-row items-center justify-between">
@@ -71,13 +70,10 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Dashboard Content */}
       <div className="container mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          {/* Main Content - Orders */}
           <div className="lg:col-span-2">
-            {/* Order Stats */}
             <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
               <h2 className="text-xl font-semibold mb-6 text-gray-800">Order Summary</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -100,7 +96,6 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Current Orders */}
             <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-semibold text-gray-800">Active Orders</h2>
@@ -145,7 +140,6 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Delivery Address */}
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h2 className="text-xl font-semibold mb-6 text-gray-800">Delivery Address</h2>
               <div className="bg-gray-50 p-4 rounded-lg">
@@ -160,9 +154,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Right Column - Quick Actions & Tracking */}
           <div>
-            {/* Order Tracking */}
             <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
               <h2 className="text-xl font-semibold mb-6 text-gray-800">Track Package</h2>
               <div className="mb-4">
@@ -184,7 +176,6 @@ export default function Dashboard() {
               <p className="text-sm text-gray-500">Enter your tracking number to check the status of your delivery.</p>
             </div>
 
-            {/* Quick Actions */}
             <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
               <h2 className="text-xl font-semibold mb-6 text-gray-800">Quick Actions</h2>
               <div className="space-y-4">
@@ -215,7 +206,6 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Delivery Support */}
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h2 className="text-xl font-semibold mb-4 text-gray-800">Need Help with Delivery?</h2>
               <p className="text-gray-600 mb-4">Our support team is here to help with any delivery issues.</p>
