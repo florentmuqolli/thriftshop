@@ -25,6 +25,7 @@ export default function Products() {
     });
     setLoading(false);
     alert("Added to favorites!");
+    mutate(); 
   };
 
   const removeFavorite = async (productId) => {
@@ -37,6 +38,7 @@ export default function Products() {
     });
     setLoading(false);
     alert("Removed from favorites!");
+    mutate();
   };
 
   return (
