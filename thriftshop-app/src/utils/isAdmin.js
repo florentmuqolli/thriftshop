@@ -5,8 +5,8 @@ export async function isAdmin(req, res) {
   const session = await getServerSession(req, res, authOptions);
 
   if (!session || session.user.role !== "admin") {
-    res.status(403).json({ error: "Forbidden: Admins only" });
-    return null;
+    return null; 
   }
+
   return session.user;
 }

@@ -1,5 +1,6 @@
 import dbConnect from "@/utils/dbConnect";
 import Product from "@/models/Product";
+import { isAdmin } from "@/utils/isAdmin";
 
 export default async function handler(req, res) {
   await dbConnect();

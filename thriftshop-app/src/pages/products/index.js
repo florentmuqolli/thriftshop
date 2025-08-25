@@ -1,3 +1,4 @@
+// pages/products/index.js
 import useSWR from "swr";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
@@ -25,7 +26,7 @@ export default function Products() {
     });
     setLoading(false);
     alert("Added to favorites!");
-    mutate(); 
+    mutate();
   };
 
   const removeFavorite = async (productId) => {
@@ -44,7 +45,6 @@ export default function Products() {
   return (
     <div className="container mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6">Products</h1>
-
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {data.data.map((p) => (
           <div key={p._id} className="border p-4 rounded shadow">

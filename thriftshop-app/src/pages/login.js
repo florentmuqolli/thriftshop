@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import Header from "../components/Header";
@@ -28,10 +28,20 @@ export default function Login() {
 
     if (res.error) {
       setError("Invalid email or password. Please try again.");
-    } else {
-      router.push("/dashboard");
+      setIsLoading(false);
+      return;
     }
-    
+
+    const session = await getSession();
+
+    if (session?.user?.role === "admin") {
+      router.push("/admin");
+    } else if (session?.user?.role === "user") {
+      router.push("/dashboard");
+    } else {
+      setError("Invalid session. Please try again.");
+    }
+
     setIsLoading(false);
   };
 
@@ -42,7 +52,6 @@ export default function Login() {
       <div className="container mx-auto px-6 py-12">
         <div className="max-w-md mx-auto">
           <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-            {/* Decorative Header */}
             <div className="bg-gradient-to-r from-purple-600 to-indigo-700 py-6 px-8 text-center">
               <h1 className="text-2xl font-bold text-white">Welcome Back</h1>
               <p className="text-purple-200 mt-1">Sign in to your ThriftShop account</p>

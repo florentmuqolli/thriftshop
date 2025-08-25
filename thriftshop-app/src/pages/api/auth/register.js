@@ -9,7 +9,7 @@ export default async function handler(req, res) {
 
   await dbConnect();
 
-  const { name, email, password } = req.body;
+  const { name, email, password, role } = req.body;
 
   if (!name || !email || !password) {
     return res.status(400).json({ message: "All fields are required" });
@@ -26,7 +26,7 @@ export default async function handler(req, res) {
     name,
     email,
     passwordHash: hashed,
-    role: "user",
+    role: role && role === "admin" ? "admin" : "user",
   });
 
   return res.status(201).json({ message: "User registered successfully", user });
