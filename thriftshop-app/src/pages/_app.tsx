@@ -3,6 +3,8 @@ import type { AppProps } from "next/app";
 import { SessionProvider } from "next-auth/react";
 import { CartProvider } from "@/hooks/useCart";
 import { WishlistProvider } from "@/hooks/useWishlist";
+import { NotificationProvider } from '@/context/NotificationContext';
+import Notification from '@/components/Notification';
 
 export default function App({
   Component,
@@ -12,7 +14,10 @@ export default function App({
     <SessionProvider session={session}>
       <CartProvider>
         <WishlistProvider>
-          <Component {...pageProps} />
+          <NotificationProvider>
+            <Component {...pageProps} />
+            <Notification />
+          </NotificationProvider>
         </WishlistProvider>
       </CartProvider>
     </SessionProvider>

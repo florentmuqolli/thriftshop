@@ -35,6 +35,7 @@ export default function Login() {
     const session = await getSession();
 
     if (session?.user?.role === "admin") {
+      console.log('role: ',session.user?.role);
       router.push("/admin");
     } else if (session?.user?.role === "user") {
       router.push("/dashboard");
