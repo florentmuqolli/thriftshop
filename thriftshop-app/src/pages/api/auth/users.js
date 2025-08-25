@@ -4,19 +4,18 @@ import { isAdmin } from "@/utils/isAdmin";
 
 export default async function handler(req, res) {
   await dbConnect();
-
   const { method } = req;
 
   switch (method) {
     case "GET":
       const adminUser = await isAdmin(req, res);
-      if (!adminUser) return res.status(403).json({ success: false, error: "Access denied" }); 
+      if (!adminUser) return;
 
       try {
-        const users = await User.find({}, "-passwordHash"); 
-        return res.status(200).json({ success: true, data: users });
+        const users = await User.find({}, "-passwordHash");
+        return res.status(200).json(users); 
       } catch (error) {
-        return res.status(400).json({ success: false, error: error.message });
+        return res.status(500).json({ success: false, error: error.message });
       }
 
     default:

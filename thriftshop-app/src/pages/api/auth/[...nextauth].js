@@ -5,7 +5,7 @@ import dbConnect from "@/utils/dbConnect";
 import User from "@/models/User";
 import bcrypt from "bcryptjs";
 
-export default NextAuth({
+export const authOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_ID,
@@ -34,7 +34,6 @@ export default NextAuth({
   callbacks: {
     async signIn({ user, account, profile }) {
       await dbConnect();
-
       let existingUser = await User.findOne({ email: user.email });
 
       if (!existingUser) {
@@ -42,13 +41,12 @@ export default NextAuth({
           name: user.name || profile?.name,
           email: user.email,
           passwordHash: "", 
-          role: "user",    
+          role: "user",
         });
       }
 
       user.id = existingUser._id.toString();
       user.role = existingUser.role;
-
       return true;
     },
 
@@ -63,11 +61,13 @@ export default NextAuth({
     async session({ session, token }) {
       if (token) {
         session.user.id = token.id;
-        session.user.role = token.role;
+        session.user.role = token.role ?? "user";
       }
       return session;
     },
   },
 
   secret: process.env.NEXTAUTH_SECRET,
-});
+};
+
+export default NextAuth(authOptions);

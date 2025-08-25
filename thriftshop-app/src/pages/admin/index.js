@@ -70,7 +70,9 @@ export default function AdminDashboard() {
     const fetchUsers = async () => {
       setLoadingUsers(true);
       try {
-        const res = await fetch("/api/auth/users");
+        const res = await fetch("/api/auth/users", {
+          credentials: "include"
+        });
 
         if (res.ok) {
           const data = await res.json();
