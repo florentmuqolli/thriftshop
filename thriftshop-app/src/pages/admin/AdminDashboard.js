@@ -26,29 +26,6 @@ export default function AdminDashboard() {
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
-  const addProduct = async (e) => {
-    e.preventDefault();
-    const res = await fetch("/api/products", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-    if (res.ok) {
-      showInfo("Product added successfully!", "Success");
-      setForm({
-        name: "",
-        description: "",
-        price: "",
-        stock: "",
-        category: "",
-        image: "",
-      });
-    } else {
-      const { error } = await res.json();
-      showError("An unexpected error occurred. Please try again.", "Error" + error);
-    }
-  };
-
   if (!session) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -158,8 +135,8 @@ export default function AdminDashboard() {
               <ProductsTab 
               form={form} 
               setForm={setForm} 
-              handleChange={handleChange} 
-              addProduct={addProduct} />
+              handleChange={handleChange}
+              />
             )}
 
             {activeTab === "users" && (

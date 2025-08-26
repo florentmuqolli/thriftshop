@@ -23,14 +23,14 @@ export default function ProductsTab({ form, setForm, handleChange }) {
     return matchesSearch && matchesCategory;
   });
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (showNotification = false) => {
     setLoading(true);
     try {
-      const res = await fetch("/api/products");
+      const res = await fetch("/api/products/products");
       const result = await res.json(); 
       if (res.ok) {
         setProducts(result.data || []); 
-        showSuccess("Products loaded successfully");
+        if (showNotification) showSuccess("Products loaded successfully");
       } else {
         console.error("Failed to fetch products:", result.error);
         showError("Failed to load products");
@@ -54,7 +54,7 @@ export default function ProductsTab({ form, setForm, handleChange }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const method = editingProductId ? "PUT" : "POST";
-    const url = editingProductId ? `/api/products/${editingProductId}` : "/api/products";
+    const url = editingProductId ? `/api/products/${editingProductId}` : "/api/products/products";
 
     try {
       const res = await fetch(url, {
@@ -78,22 +78,6 @@ export default function ProductsTab({ form, setForm, handleChange }) {
     }
   };
 
-  const handleDelete = async (id, name) => {
-    if (!confirm(`Are you sure you want to delete "${name}"?`)) return;
-    try {
-      const res = await fetch(`/api/products/${id}`, { method: "DELETE" });
-      if (res.ok) {
-        showSuccess("Product deleted successfully!");
-        fetchProducts(); 
-      } else {
-        const { error } = await res.json();
-        showError("Error: " + error);
-      }
-    } catch (err) {
-      showError("Network error. Please try again.");
-    }
-  };
-
   const handleEdit = (product) => {
     setForm({
       name: product.name,
@@ -103,7 +87,7 @@ export default function ProductsTab({ form, setForm, handleChange }) {
       category: product.category,
       image: product.image,
     });
-    setEditingProductId(product.id);
+    setEditingProductId(product._id);
     setShowModal(true);
   };
 

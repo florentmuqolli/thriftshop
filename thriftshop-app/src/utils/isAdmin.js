@@ -3,7 +3,6 @@ import { authOptions } from "../pages/api/auth/[...nextauth]";
 
 export async function isAdmin(req, res) {
   const session = await getServerSession(req, res, authOptions);
-  console.log("session in isAdmin:", session);
 
   if (!session?.user?.role || session.user.role !== "admin") {
     res.status(403).json({ success: false, error: "Access denied" });

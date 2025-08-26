@@ -76,7 +76,7 @@ export default function Header() {
                       Wishlist
                     </Link>
                     {isAdmin && (
-                      <Link href="/admin" className="block px-4 py-2 text-sm text-purple-600 font-semibold hover:bg-gray-100">
+                      <Link href="/admin/AdminDashboard" className="block px-4 py-2 text-sm text-purple-600 font-semibold hover:bg-gray-100">
                         Admin Panel
                       </Link>
                     )}
@@ -103,7 +103,6 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="md:hidden border-t border-gray-100 py-4">
             <nav className="flex flex-col space-y-3 px-2">
@@ -136,7 +135,7 @@ export default function Header() {
                       Wishlist
                     </Link>
                     {isAdmin && (
-                      <Link href="/admin" className="text-purple-600 font-semibold hover:text-purple-700 transition duration-300 py-2 font-medium block">
+                      <Link href="/admin/AdminDashboard" className="text-purple-600 font-semibold hover:text-purple-700 transition duration-300 py-2 font-medium block">
                         Admin Panel
                       </Link>
                     )}

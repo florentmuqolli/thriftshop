@@ -52,7 +52,7 @@ export default function Login() {
     if (session?.user) {
       switch (session.user.role) {
         case "admin":
-          router.replace("/admindashboard"); 
+          router.replace("/admin/AdminDashboard"); 
           break;
         case "user":
           router.replace("/dashboard"); 
