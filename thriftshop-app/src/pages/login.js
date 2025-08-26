@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signIn, getSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
 export default function Login() {
+  const { data: session } = useSession();
   const router = useRouter();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
@@ -36,15 +38,30 @@ export default function Login() {
 
     if (session?.user?.role === "admin") {
       console.log('role: ',session.user?.role);
-      router.push("/admin");
+      router.push("/admin/AdminDashboard", undefined, { replace: true });
     } else if (session?.user?.role === "user") {
-      router.push("/dashboard");
+      router.push("/dashboard", undefined, { replace: true });
     } else {
       setError("Invalid session. Please try again.");
     }
 
     setIsLoading(false);
   };
+
+  useEffect(() => {
+    if (session?.user) {
+      switch (session.user.role) {
+        case "admin":
+          router.replace("/admindashboard"); 
+          break;
+        case "user":
+          router.replace("/dashboard"); 
+          break;
+        default:
+          router.replace("/"); 
+      }
+    }
+  }, [session, router]);
 
   return (
     <div className="min-h-screen bg-gray-50">
