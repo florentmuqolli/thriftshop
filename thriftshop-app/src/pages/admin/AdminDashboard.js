@@ -1,5 +1,5 @@
 import { useSession } from "next-auth/react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import { useNotification } from '../../context/NotificationContext';
@@ -34,7 +34,7 @@ export default function AdminDashboard() {
       body: JSON.stringify(form),
     });
     if (res.ok) {
-      alert("✅ Product added successfully!");
+      showInfo("Product added successfully!", "Success");
       setForm({
         name: "",
         description: "",
@@ -45,7 +45,7 @@ export default function AdminDashboard() {
       });
     } else {
       const { error } = await res.json();
-      alert("❌ Error: " + error);
+      showError("An unexpected error occurred. Please try again.", "Error" + error);
     }
   };
 
@@ -155,7 +155,11 @@ export default function AdminDashboard() {
 
           <div className="p-6">
             {activeTab === "products" && (
-              <ProductsTab form={form} handleChange={handleChange} addProduct={addProduct} />
+              <ProductsTab 
+              form={form} 
+              setForm={setForm} 
+              handleChange={handleChange} 
+              addProduct={addProduct} />
             )}
 
             {activeTab === "users" && (

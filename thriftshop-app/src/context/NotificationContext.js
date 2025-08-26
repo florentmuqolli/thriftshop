@@ -13,7 +13,7 @@ export function NotificationProvider({ children }) {
     
     setTimeout(() => {
       removeNotification(id);
-    }, 3000);
+    }, 5000);
   };
 
   const removeNotification = (id) => {
