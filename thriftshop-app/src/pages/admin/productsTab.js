@@ -26,11 +26,21 @@ export default function ProductsTab({ form, setForm, handleChange }) {
   const fetchProducts = async (showNotification = false) => {
     setLoading(true);
     try {
-      const res = await fetch("/api/products/products");
+      const res = await fetch("/api/products/products", {
+        credentials: "include",
+        headers: { "Cache-Control": "no-cache" }, 
+      });
       const result = await res.json(); 
+
+      if (res.status === 304) {
+        showInfo("Users data not modified; using cached version", "Info");
+        setLoading(false);
+        return;
+      }
+
       if (res.ok) {
         setProducts(result.data || []); 
-        if (showNotification) showSuccess("Products loaded successfully");
+        if (showNotification) showInfo("Products loaded successfully");
       } else {
         console.error("Failed to fetch products:", result.error);
         showError("Failed to load products");
