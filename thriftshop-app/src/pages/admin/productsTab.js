@@ -73,6 +73,12 @@ export default function ProductsTab({ form, setForm, handleChange }) {
         body: JSON.stringify(form),
       });
 
+      const raw = await res.text();
+      console.log("Save response:", res.status, raw);
+
+      let data = {};
+      try { data = JSON.parse(raw); } catch {}
+
       if (res.ok) {
         showSuccess(editingProductId ? "Product updated successfully!" : "Product added successfully!");
         setShowModal(false);
@@ -80,8 +86,7 @@ export default function ProductsTab({ form, setForm, handleChange }) {
         setForm({ name: "", description: "", price: "", stock: "", category: "", image: "" });
         fetchProducts(); 
       } else {
-        const { error } = await res.json();
-        showError("Error: " + error);
+        showError(data.error || `Failed to save user (status ${res.status})`);
       }
     } catch (err) {
       showError("Network error. Please try again.");
