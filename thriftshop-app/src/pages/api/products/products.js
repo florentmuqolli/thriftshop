@@ -8,8 +8,6 @@ export default async function handler(req, res) {
 
   switch (method) {
     case "GET":
-      const adminUser = await isAdmin(req, res);
-      if (!adminUser) return;
 
       try {
         const products = await Product.find({});
