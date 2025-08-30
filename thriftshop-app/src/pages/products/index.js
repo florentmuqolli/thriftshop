@@ -23,7 +23,7 @@ export default function Products() {
   const filteredProducts = products
     .filter(product => {
       const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.description?.toLowerCase().includes(searchTerm.toLowerCase());
+      product.description?.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
       const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1];
       return matchesSearch && matchesCategory && matchesPrice;
@@ -55,6 +55,7 @@ export default function Products() {
       if (res.ok) {
         const data = await res.json();
         setProducts(data.data || data);
+        
         const maxPrice = Math.max(...(data.data || data).map(p => p.price), 1000);
         setPriceRange([0, maxPrice]);
       } else {
@@ -84,7 +85,7 @@ export default function Products() {
     }
 
     try {
-      const res = await fetch("/api/favorites", {
+      const res = await fetch("/api/auth/favorites", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: session.user.id, productId }),
@@ -102,7 +103,7 @@ export default function Products() {
     if (!session) return;
 
     try {
-      const res = await fetch("/api/favorites", {
+      const res = await fetch("/api/auth/favorites", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: session.user.id, productId }),
@@ -122,7 +123,7 @@ export default function Products() {
 
   if (loading && !products.length) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-white">
         <Header />
         <div className="container mx-auto px-6 py-8">
           <div className="flex justify-center items-center min-h-96">
@@ -136,20 +137,20 @@ export default function Products() {
 
   if (error && !products.length) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-white">
         <Header />
         <div className="container mx-auto px-6 py-8">
           <div className="text-center py-12">
-            <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">Error Loading Products</h2>
-            <p className="text-gray-600 dark:text-gray-300 mb-6">{error}</p>
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">Error Loading Products</h2>
+            <p className="text-gray-600 mb-6">{error}</p>
             <button
               onClick={fetchProducts}
-              className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold py-2.5 px-6 rounded-lg transition-all duration-300"
+              className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold py-2.5 px-6 rounded-lg transition-all duration-300"
             >
               Try Again
             </button>
@@ -161,23 +162,23 @@ export default function Products() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-white">
       <Header />
       
       <div className="container mx-auto px-6 py-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">Shop Products</h1>
-            <p className="text-gray-600 dark:text-gray-300">Discover unique second-hand treasures</p>
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">Shop Products</h1>
+            <p className="text-gray-600">Discover unique second-hand treasures</p>
           </div>
           <div className="mt-4 md:mt-0">
-            <span className="text-sm text-gray-500 dark:text-gray-400">
+            <span className="text-sm text-gray-500">
               {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} found
             </span>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-8">
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="md:col-span-2">
               <div className="relative">
@@ -191,7 +192,7 @@ export default function Products() {
                   placeholder="Search products..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition duration-300"
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-300 text-gray-700"
                 />
               </div>
             </div>
@@ -199,11 +200,11 @@ export default function Products() {
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition duration-300"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-300 text-gray-400"
               >
-                <option value="all">All Categories</option>
+                <option value="all" className="text-gray-400">All Categories</option>
                 {categories.filter(cat => cat !== "all").map(category => (
-                  <option key={category} value={category}>{category}</option>
+                  <option key={category} value={category} className="text-gray-400">{category}</option>
                 ))}
               </select>
             </div>
@@ -211,17 +212,17 @@ export default function Products() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition duration-300"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-300 text-gray-400"
               >
-                <option value="newest">Newest First</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-                <option value="name">Name: A to Z</option>
+                <option value="newest" className="text-gray-400">Newest First</option>
+                <option value="price-low" className="text-gray-400">Price: Low to High</option>
+                <option value="price-high" className="text-gray-400">Price: High to Low</option>
+                <option value="name" className="text-gray-400">Name: A to Z</option>
               </select>
             </div>
           </div>
           <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Price Range: ${priceRange[0]} - ${priceRange[1]}
             </label>
             <div className="relative pt-1">
@@ -231,20 +232,20 @@ export default function Products() {
                 max={Math.max(...products.map(p => p.price), 1000)}
                 value={priceRange[1]}
                 onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
-                className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
               />
             </div>
           </div>
         </div>
         {filteredProducts.length === 0 ? (
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-12 text-center">
-            <div className="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-6">
+          <div className="bg-white rounded-xl shadow-sm p-12 text-center">
+            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
               </svg>
             </div>
-            <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">No products found</h3>
-            <p className="text-gray-600 dark:text-gray-300 mb-6">
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">No products found</h3>
+            <p className="text-gray-600 mb-6">
               {searchTerm || selectedCategory !== "all" || priceRange[1] < 1000
                 ? "Try adjusting your search or filter criteria"
                 : "No products available at the moment"}
@@ -255,7 +256,7 @@ export default function Products() {
                 setSelectedCategory("all");
                 setPriceRange([0, Math.max(...products.map(p => p.price), 1000)]);
               }}
-              className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold py-2.5 px-6 rounded-lg transition-all duration-300"
+              className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold py-2.5 px-6 rounded-lg transition-all duration-300"
             >
               Clear Filters
             </button>
@@ -263,7 +264,8 @@ export default function Products() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredProducts.map((product) => (
-              <div key={product._id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300 group">
+              <div key={product._id} className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300 group">
+                {/* Product Image */}
                 <div className="relative overflow-hidden">
                   <img
                     src={product.image || "/api/placeholder/300/300"}
@@ -273,13 +275,12 @@ export default function Products() {
                       e.target.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJtb25vc3BhY2UiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5YzlkYTIiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4=";
                     }}
                   />
-                  
                   <button
                     onClick={() => product.isFavorite ? removeFavorite(product._id) : addFavorite(product._id)}
                     className={`absolute top-3 right-3 p-2 rounded-full transition-all duration-300 ${
                       product.isFavorite 
                         ? "bg-red-500 text-white" 
-                        : "bg-white/90 dark:bg-gray-800/90 text-gray-600 dark:text-gray-300 hover:bg-red-500 hover:text-white"
+                        : "bg-white/90 text-gray-600 hover:bg-red-500 hover:text-white"
                     }`}
                   >
                     <svg 
@@ -292,33 +293,30 @@ export default function Products() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                     </svg>
                   </button>
-
                   {product.category && (
-                    <div className="absolute top-3 left-3 bg-purple-100 dark:bg-purple-900/80 text-purple-800 dark:text-purple-200 text-xs font-medium px-2 py-1 rounded-full">
+                    <div className="absolute top-3 left-3 bg-purple-100 text-purple-800 text-xs font-medium px-2 py-1 rounded-full">
                       {product.category}
                     </div>
                   )}
                 </div>
-
                 <div className="p-4">
-                  <h3 className="font-semibold text-gray-800 dark:text-white mb-1 truncate">{product.name}</h3>
-                  <p className="text-gray-600 dark:text-gray-300 text-sm mb-3 line-clamp-2 h-10">
+                  <h3 className="font-semibold text-gray-800 mb-1 truncate">{product.name}</h3>
+                  <p className="text-gray-600 text-sm mb-3 line-clamp-2 h-10">
                     {product.description || "No description available"}
                   </p>
                   
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-2xl font-bold text-purple-600 dark:text-purple-400">${product.price}</span>
+                    <span className="text-2xl font-bold text-purple-600">${product.price}</span>
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                       product.stock > 10 
-                        ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" 
+                        ? "bg-green-100 text-green-800" 
                         : product.stock > 0 
-                        ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-                        : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                        ? "bg-yellow-100 text-yellow-800"
+                        : "bg-red-100 text-red-800"
                     }`}>
                       {product.stock || 0} in stock
                     </span>
                   </div>
-
                   <div className="flex gap-2">
                     <button
                       onClick={() => addToCart(product)}
@@ -331,7 +329,7 @@ export default function Products() {
                     </button>
                     <Link
                       href={`/products/${product._id}`}
-                      className="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium py-2 px-4 rounded-lg transition duration-300 flex items-center justify-center"
+                      className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition duration-300 flex items-center justify-center"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
