@@ -265,7 +265,6 @@ export default function Products() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredProducts.map((product) => (
               <div key={product._id} className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300 group">
-                {/* Product Image */}
                 <div className="relative overflow-hidden">
                   <img
                     src={product.image || "/api/placeholder/300/300"}
