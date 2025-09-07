@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import { useNotification } from "../../context/NotificationContext";
+import useCart from "../../hooks/useCart"
 import Link from "next/link";
 
 export default function ProductDetails() {
@@ -94,8 +95,26 @@ export default function ProductDetails() {
     }
   };
 
-  const addToCart = () => {
-    showSuccess(`${quantity} ${product.name} added to cart!`);
+  const { cart, addToCart, updateQuantity } = useCart();
+
+  const inCart = cart.find((item) => item.id === product?._id);
+
+  const handleAddToCart = () => {
+    if (!product) return;
+
+    if (inCart) {
+      updateQuantity(product._id, inCart.quantity + quantity);
+      showSuccess(`Updated quantity of ${product.name} in cart!`);
+    } else {
+      addToCart({
+        id: product._id,
+        name: product.name,
+        price: product.price,
+        quantity,
+        image: product.image || "/api/placeholder/600/600"
+      });
+      showSuccess(`${quantity} ${product.name} added to cart!`);
+    }
   };
 
   if (loading) {
@@ -266,17 +285,28 @@ export default function ProductDetails() {
               </div>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 mb-8">
-              <button
-                onClick={addToCart}
-                disabled={product.stock === 0}
-                className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                </svg>
-                Add to Cart
-              </button>
-              
+              {inCart ? (
+                <Link
+                  href="/cart"
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1.6 8h13.2M7 13l1.6-8h8.8" />
+                  </svg>
+                  View Cart
+                </Link>
+              ) : (
+                <button
+                  onClick={handleAddToCart}
+                  disabled={product.stock === 0}
+                  className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                  </svg>
+                  Add to Cart
+                </button>
+              )}
               {session ? (
                 product.isFavorite ? (
                   <button
