@@ -4,7 +4,8 @@ import { useSession } from "next-auth/react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import { useNotification } from "../../context/NotificationContext";
-import useCart from "../../hooks/useCart"
+import useCart from "../../hooks/useCart";
+import useWishlist from "../../hooks/useWishlist";
 import Link from "next/link";
 
 export default function ProductDetails() {
@@ -19,6 +20,9 @@ export default function ProductDetails() {
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [imageGallery, setImageGallery] = useState([]);
+
+  const { cart, addToCart, updateQuantity } = useCart();
+  const { wishlist, addToWishlist, removeFromWishlist } = useWishlist(); // ✅ From your provider
 
   const fetchProduct = async () => {
     if (!id) return; 
@@ -52,52 +56,8 @@ export default function ProductDetails() {
     fetchProduct();
   }, [id]); 
 
-  const addFavorite = async () => {
-    if (!session) {
-      showWarning("You must be logged in to add favorites", "Login Required");
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const res = await fetch("/api/auth/favorites", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: session.user.id, productId: id }),
-      });
-
-      if (!res.ok) throw new Error("Failed to add favorite");
-      showSuccess("Added to favorites!");
-    } catch (err) {
-      showError(err.message || "Network error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const removeFavorite = async () => {
-    if (!session) return;
-
-    try {
-      setLoading(true);
-      const res = await fetch("/api/auth/favorites", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: session.user.id, productId: id }),
-      });
-
-      if (!res.ok) throw new Error("Failed to remove favorite");
-      showSuccess("Removed from favorites!");
-    } catch (err) {
-      showError(err.message || "Network error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const { cart, addToCart, updateQuantity } = useCart();
-
   const inCart = cart.find((item) => item.id === product?._id);
+  const inWishlist = wishlist.find((item) => item.id === product?._id); // ✅ check if in wishlist
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -114,6 +74,26 @@ export default function ProductDetails() {
         image: product.image || "/api/placeholder/600/600"
       });
       showSuccess(`${quantity} ${product.name} added to cart!`);
+    }
+  };
+
+  const handleWishlistToggle = () => {
+    if (!session) {
+      showWarning("You must be logged in to use wishlist", "Login Required");
+      return;
+    }
+
+    if (inWishlist) {
+      removeFromWishlist(product._id);
+      showSuccess("Removed from wishlist!");
+    } else {
+      addToWishlist({
+        id: product._id,
+        name: product.name,
+        price: product.price,
+        image: product.image || "/api/placeholder/600/600",
+      });
+      showSuccess("Added to wishlist!");
     }
   };
 
@@ -290,56 +270,29 @@ export default function ProductDetails() {
                   href="/cart"
                   className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1.6 8h13.2M7 13l1.6-8h8.8" />
-                  </svg>
                   View Cart
                 </Link>
               ) : (
                 <button
                   onClick={handleAddToCart}
                   disabled={product.stock === 0}
-                  className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-50"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                  </svg>
                   Add to Cart
                 </button>
               )}
-              {session ? (
-                product.isFavorite ? (
-                  <button
-                    onClick={removeFavorite}
-                    className="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold py-3 px-6 rounded-lg transition duration-300 flex items-center justify-center"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-red-500" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                    </svg>
-                    Remove Favorite
-                  </button>
-                ) : (
-                  <button
-                    onClick={addFavorite}
-                    className="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold py-3 px-6 rounded-lg transition duration-300 flex items-center justify-center"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                    </svg>
-                    Add to Favorites
-                  </button>
-                )
-              ) : (
-                <Link
-                  href="/login"
-                  className="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold py-3 px-6 rounded-lg transition duration-300 flex items-center justify-center"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                  Login to Favorite
-                </Link>
-              )}
+
+              {/* Wishlist Button */}
+              <button
+                onClick={handleWishlistToggle}
+                className={`flex-1 border py-3 px-6 rounded-lg transition duration-300 flex items-center justify-center ${
+                  inWishlist
+                    ? "bg-red-50 border-red-300 text-red-600"
+                    : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                {inWishlist ? "Remove from Wishlist" : "Add to Wishlist"}
+              </button>
             </div>
             <div className="bg-gray-50 rounded-lg p-4">
               <h3 className="font-semibold text-gray-800 mb-3">Why you'll love this item</h3>
