@@ -88,53 +88,57 @@ export default function Products() {
     }
   }, []);
 
-  const handleWishlistToggle = () => {
+  const handleWishlistToggle = (product) => {
     if (!session) {
       showWarning("You must be logged in to use wishlist", "Login Required");
       return;
     }
 
+    const inWishlist = wishlist.find((item) => item.id === product._id);
+
     if (inWishlist) {
-      removeFromWishlist(selectedProduct._id);
+      removeFromWishlist(product._id);
       showSuccess("Removed from wishlist!");
     } else {
       addToWishlist({
-        id: selectedProduct._id,
-        name: selectedProduct.name,
-        price: selectedProduct.price,
-        image: selectedProduct.image || "/api/placeholder/600/600",
+        id: product._id,
+        name: product.name,
+        price: product.price,
+        image: product.image || "/api/placeholder/600/600",
       });
       showSuccess("Added to wishlist!");
     }
   };
+
 
   const openQuickView = (product) => {
     setSelectedProduct(product);
     setShowQuickView(true);
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (product) => {
     if (!session) {
-      showWarning("You must be logged in to use wishlist", "Login Required");
+      showWarning("You must be logged in to use cart", "Login Required");
       return;
     }
 
-    if (!selectedProduct) return;
+    const inCart = cart.find((item) => item.id === product._id);
 
     if (inCart) {
-      updateQuantity(selectedProduct._id, inCart.quantity + 1);
-      showSuccess(`Updated quantity of ${selectedProduct.name} in cart!`);
+      updateQuantity(product._id, inCart.quantity + 1);
+      showSuccess(`Updated quantity of ${product.name} in cart!`);
     } else {
       addToCart({
-        id: selectedProduct._id,
-        name: selectedProduct.name,
-        price: selectedProduct.price,
+        id: product._id,
+        name: product.name,
+        price: product.price,
         quantity: 1,
-        image: selectedProduct.image || "/api/placeholder/600/600"
+        image: product.image || "/api/placeholder/600/600",
       });
-      showSuccess(`${quantity} ${selectedProduct.name} added to cart!`);
+      showSuccess(`${quantity} ${product.name} added to cart!`);
     }
   };
+
 
   if (loading && !products.length) {
     return (

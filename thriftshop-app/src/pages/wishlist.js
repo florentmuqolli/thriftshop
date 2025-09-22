@@ -64,7 +64,7 @@ export default function WishlistPage() {
                   key={item.id}
                   className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800 shadow hover:shadow-md transition duration-300"
                 >
-                  <Link href={`/products/${item.id}`}>
+                  <Link href={`/products/${item._id}`}>
                     <img
                       src={item.image || "/api/placeholder/300/200"}
                       alt={item.name}
