@@ -22,7 +22,7 @@ export default function ProductDetails() {
   const [imageGallery, setImageGallery] = useState([]);
 
   const { cart, addToCart, updateQuantity } = useCart();
-  const { wishlist, addToWishlist, removeFromWishlist } = useWishlist(); // ✅ From your provider
+  const { wishlist, addToWishlist, removeFromWishlist } = useWishlist(); 
 
   const fetchProduct = async () => {
     if (!id) return; 
@@ -57,9 +57,14 @@ export default function ProductDetails() {
   }, [id]); 
 
   const inCart = cart.find((item) => item.id === product?._id);
-  const inWishlist = wishlist.find((item) => item.id === product?._id); // ✅ check if in wishlist
+  const inWishlist = wishlist.find((item) => item.id === product?._id); 
 
   const handleAddToCart = () => {
+    if (!session) {
+      showWarning("You must be logged in to use wishlist", "Login Required");
+      return;
+    }
+
     if (!product) return;
 
     if (inCart) {
@@ -281,8 +286,6 @@ export default function ProductDetails() {
                   Add to Cart
                 </button>
               )}
-
-              {/* Wishlist Button */}
               <button
                 onClick={handleWishlistToggle}
                 className={`flex-1 border py-3 px-6 rounded-lg transition duration-300 flex items-center justify-center ${

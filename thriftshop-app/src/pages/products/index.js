@@ -117,10 +117,6 @@ export default function Products() {
     }
   };
 
-  const addToCart = (product) => {
-    showSuccess(`${product.name} added to cart!`);
-  };
-
   if (loading && !products.length) {
     return (
       <div className="min-h-screen bg-white">
@@ -317,15 +313,6 @@ export default function Products() {
                     </span>
                   </div>
                   <div className="flex gap-2">
-                    <button
-                      onClick={() => addToCart(product)}
-                      className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 flex items-center justify-center"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                      </svg>
-                      Add to Cart
-                    </button>
                     <Link
                       href={`/products/${product._id}`}
                       className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition duration-300 flex items-center justify-center"

@@ -1,12 +1,14 @@
 import useCart from "@/hooks/useCart";
 import Link from "next/link";
 import Header from "../components/Header";
+import { useSession } from "next-auth/react";
 import Footer from "../components/Footer";
 import { useNotification } from "../context/NotificationContext";
 
 export default function CartPage() {
   const { cart, removeFromCart, clearCart, updateQuantity } = useCart();
   const { showSuccess, showError } = useNotification();
+  const { data: session } = useSession();
 
   const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
   const shipping = subtotal > 0 ? 5.99 : 0;
@@ -33,6 +35,29 @@ export default function CartPage() {
   const handleCheckout = () => {
     showSuccess("Proceeding to checkout!");
   };
+
+  if (!session) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Header />
+        <div className="container mx-auto px-6 py-20 text-center">
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">
+            Please log in to use cart features
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            You need an account to save items, update your cart, and checkout.
+          </p>
+          <Link
+            href="/login"
+            className="inline-block bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+          >
+            🔑 Log In / Sign Up
+          </Link>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
