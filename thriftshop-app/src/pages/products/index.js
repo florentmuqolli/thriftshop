@@ -3,6 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import { useNotification } from "../../context/NotificationContext";
+import useCart from "../../hooks/useCart";
+import useWishlist from "../../hooks/useWishlist";
 import Link from "next/link";
 
 export default function Products() {
@@ -17,6 +19,11 @@ export default function Products() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
   const [priceRange, setPriceRange] = useState([0, 1000]);
+  const [showQuickView, setShowQuickView] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [quantity, setQuantity] = useState(1);
+  const { cart, addToCart, updateQuantity } = useCart();
+  const { wishlist, addToWishlist, removeFromWishlist } = useWishlist(); 
 
   const categories = ["all", ...new Set(products.map(product => product.category).filter(Boolean))];
 
@@ -71,6 +78,9 @@ export default function Products() {
     }
   };
 
+  const inCart = cart.find((item) => item.id === selectedProduct?._id);
+  const inWishlist = wishlist.find((item) => item.id === selectedProduct?._id); 
+
   useEffect(() => {
     if (!hasFetched.current) {
       hasFetched.current = true;
@@ -78,42 +88,51 @@ export default function Products() {
     }
   }, []);
 
-  const addFavorite = async (productId) => {
+  const handleWishlistToggle = () => {
     if (!session) {
-      showWarning("You must be logged in to add favorites", "Login Required");
+      showWarning("You must be logged in to use wishlist", "Login Required");
       return;
     }
 
-    try {
-      const res = await fetch("/api/auth/favorites", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: session.user.id, productId }),
+    if (inWishlist) {
+      removeFromWishlist(selectedProduct._id);
+      showSuccess("Removed from wishlist!");
+    } else {
+      addToWishlist({
+        id: selectedProduct._id,
+        name: selectedProduct.name,
+        price: selectedProduct.price,
+        image: selectedProduct.image || "/api/placeholder/600/600",
       });
-
-      if (!res.ok) throw new Error("Failed to add favorite");
-      showSuccess("Added to favorites!");
-      fetchProducts();
-    } catch (err) {
-      showError(err.message || "Network error");
+      showSuccess("Added to wishlist!");
     }
   };
 
-  const removeFavorite = async (productId) => {
-    if (!session) return;
+  const openQuickView = (product) => {
+    setSelectedProduct(product);
+    setShowQuickView(true);
+  };
 
-    try {
-      const res = await fetch("/api/auth/favorites", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: session.user.id, productId }),
+  const handleAddToCart = () => {
+    if (!session) {
+      showWarning("You must be logged in to use wishlist", "Login Required");
+      return;
+    }
+
+    if (!selectedProduct) return;
+
+    if (inCart) {
+      updateQuantity(selectedProduct._id, inCart.quantity + 1);
+      showSuccess(`Updated quantity of ${selectedProduct.name} in cart!`);
+    } else {
+      addToCart({
+        id: selectedProduct._id,
+        name: selectedProduct.name,
+        price: selectedProduct.price,
+        quantity: 1,
+        image: selectedProduct.image || "/api/placeholder/600/600"
       });
-
-      if (!res.ok) throw new Error("Failed to remove favorite");
-      showSuccess("Removed from favorites!");
-      fetchProducts();
-    } catch (err) {
-      showError(err.message || "Network error");
+      showSuccess(`${quantity} ${selectedProduct.name} added to cart!`);
     }
   };
 
@@ -146,7 +165,7 @@ export default function Products() {
             <p className="text-gray-600 mb-6">{error}</p>
             <button
               onClick={fetchProducts}
-              className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold py-2.5 px-6 rounded-lg transition-all duration-300"
+              className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold py-2.5 px-6 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
             >
               Try Again
             </button>
@@ -162,19 +181,32 @@ export default function Products() {
       <Header />
       
       <div className="container mx-auto px-6 py-8">
+        <div className="bg-gradient-to-r from-purple-500 to-indigo-600 rounded-2xl p-8 mb-8 text-white text-center">
+          <h1 className="text-4xl font-bold mb-4">Discover Unique Treasures</h1>
+          <p className="text-xl mb-6 max-w-2xl mx-auto">Find pre-loved fashion items that tell a story and reduce waste</p>
+          <div className="w-24 h-1 bg-white/30 rounded-full mx-auto mb-6"></div>
+        </div>
+
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-800 mb-2">Shop Products</h1>
             <p className="text-gray-600">Discover unique second-hand treasures</p>
           </div>
           <div className="mt-4 md:mt-0">
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
               {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} found
             </span>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
+        <div className="bg-white rounded-2xl shadow-xl p-6 mb-8 border border-gray-100">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+            </svg>
+            Filter Products
+          </h3>
+          
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="md:col-span-2">
               <div className="relative">
@@ -188,55 +220,63 @@ export default function Products() {
                   placeholder="Search products..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-300 text-gray-700"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-300 text-gray-700 shadow-sm"
                 />
               </div>
             </div>
+            
             <div>
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-300 text-gray-400"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-300 text-gray-700 shadow-sm"
               >
-                <option value="all" className="text-gray-400">All Categories</option>
+                <option value="all">All Categories</option>
                 {categories.filter(cat => cat !== "all").map(category => (
-                  <option key={category} value={category} className="text-gray-400">{category}</option>
+                  <option key={category} value={category}>{category}</option>
                 ))}
               </select>
             </div>
+            
             <div>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-300 text-gray-400"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-300 text-gray-700 shadow-sm"
               >
-                <option value="newest" className="text-gray-400">Newest First</option>
-                <option value="price-low" className="text-gray-400">Price: Low to High</option>
-                <option value="price-high" className="text-gray-400">Price: High to Low</option>
-                <option value="name" className="text-gray-400">Name: A to Z</option>
+                <option value="newest">Newest First</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+                <option value="name">Name: A to Z</option>
               </select>
             </div>
           </div>
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Price Range: ${priceRange[0]} - ${priceRange[1]}
+          
+          <div className="mt-6">
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Price Range: <span className="text-purple-600 font-semibold">${priceRange[0]} - ${priceRange[1]}</span>
             </label>
-            <div className="relative pt-1">
+            <div className="relative pt-2">
               <input
                 type="range"
                 min="0"
                 max={Math.max(...products.map(p => p.price), 1000)}
                 value={priceRange[1]}
                 onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-lg"
               />
+              <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <span>$0</span>
+                <span>${Math.max(...products.map(p => p.price), 1000)}</span>
+              </div>
             </div>
           </div>
         </div>
+
         {filteredProducts.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="bg-white rounded-2xl shadow-xl p-12 text-center border border-gray-100">
+            <div className="w-24 h-24 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
               </svg>
             </div>
@@ -252,7 +292,7 @@ export default function Products() {
                 setSelectedCategory("all");
                 setPriceRange([0, Math.max(...products.map(p => p.price), 1000)]);
               }}
-              className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold py-2.5 px-6 rounded-lg transition-all duration-300"
+              className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold py-3 px-8 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
             >
               Clear Filters
             </button>
@@ -260,49 +300,60 @@ export default function Products() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredProducts.map((product) => (
-              <div key={product._id} className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300 group">
+              <div key={product._id} className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group border border-gray-100">
                 <div className="relative overflow-hidden">
                   <img
                     src={product.image || "/api/placeholder/300/300"}
                     alt={product.name}
-                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
                     onError={(e) => {
                       e.target.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJtb25vc3BhY2UiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5YzlkYTIiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4=";
                     }}
                   />
+                  
                   <button
-                    onClick={() => product.isFavorite ? removeFavorite(product._id) : addFavorite(product._id)}
-                    className={`absolute top-3 right-3 p-2 rounded-full transition-all duration-300 ${
-                      product.isFavorite 
-                        ? "bg-red-500 text-white" 
-                        : "bg-white/90 text-gray-600 hover:bg-red-500 hover:text-white"
-                    }`}
+                    onClick={() => openQuickView(product)}
+                    className="absolute top-3 left-3 bg-white/90 text-gray-700 p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-md hover:bg-white hover:text-purple-600"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2 12h4m14 0h4M12 2v4m0 14v4" />
+                    </svg>
+                  </button>
+
+                  <button
+                    onClick={ handleWishlistToggle }
+                    className={`absolute top-3 right-3 p-2 rounded-full transition-all duration-300 shadow-md  "bg-white/90 text-gray-600 hover:bg-red-500 hover:text-white"`}
                   >
                     <svg 
                       xmlns="http://www.w3.org/2000/svg" 
                       className="h-5 w-5" 
-                      fill={product.isFavorite ? "currentColor" : "none"} 
+                      fill={"none"} 
                       viewBox="0 0 24 24" 
                       stroke="currentColor"
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                     </svg>
                   </button>
+
                   {product.category && (
-                    <div className="absolute top-3 left-3 bg-purple-100 text-purple-800 text-xs font-medium px-2 py-1 rounded-full">
+                    <div className="absolute bottom-3 left-3 bg-purple-100 text-purple-800 text-xs font-medium px-3 py-1 rounded-full shadow-sm">
                       {product.category}
                     </div>
                   )}
                 </div>
-                <div className="p-4">
-                  <h3 className="font-semibold text-gray-800 mb-1 truncate">{product.name}</h3>
-                  <p className="text-gray-600 text-sm mb-3 line-clamp-2 h-10">
+
+                <div className="p-5">
+                  <h3 className="font-semibold text-gray-800 mb-2 truncate hover:text-purple-600 transition-colors duration-300">
+                    {product.name}
+                  </h3>
+                  <p className="text-gray-600 text-sm mb-4 line-clamp-2 h-10">
                     {product.description || "No description available"}
                   </p>
                   
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center justify-between mb-4">
                     <span className="text-2xl font-bold text-purple-600">${product.price}</span>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium shadow-sm ${
                       product.stock > 10 
                         ? "bg-green-100 text-green-800" 
                         : product.stock > 0 
@@ -312,10 +363,21 @@ export default function Products() {
                       {product.stock || 0} in stock
                     </span>
                   </div>
+
                   <div className="flex gap-2">
+                    <button
+                      onClick={() => openQuickView(product)}
+                      className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium py-2.5 px-4 rounded-xl transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                      </svg>
+                      Quick View
+                    </button>
+                    
                     <Link
                       href={`/products/${product._id}`}
-                      className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition duration-300 flex items-center justify-center"
+                      className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 px-4 rounded-xl transition duration-300 flex items-center justify-center shadow-md hover:shadow-lg"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -326,6 +388,93 @@ export default function Products() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {showQuickView && selectedProduct && (
+          <div className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity duration-300">
+            <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl transform transition-all duration-300 scale-95 animate-in fade-in-90 zoom-in-90">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold text-gray-800">Quick View</h2>
+                  <button
+                    onClick={() => setShowQuickView(false)}
+                    className="text-gray-400 hover:text-gray-600 transition duration-300 p-1 rounded-full hover:bg-gray-100"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="bg-gray-100 rounded-xl p-4 flex items-center justify-center h-80">
+                    <img
+                      src={selectedProduct.image || "/api/placeholder/400/400"}
+                      alt={selectedProduct.name}
+                      className="max-h-64 object-contain rounded-lg"
+                      onError={(e) => {
+                        e.target.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJtb25vc3BhY2UiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5YzlkYTIiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4=";
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-800 mb-2">{selectedProduct.name}</h3>
+                    <div className="flex items-center mb-4">
+                      <span className="text-3xl font-bold text-purple-600">${selectedProduct.price}</span>
+                      {selectedProduct.originalPrice && (
+                        <span className="text-lg text-gray-400 line-through ml-3">${selectedProduct.originalPrice}</span>
+                      )}
+                    </div>
+
+                    <p className="text-gray-600 mb-6">{selectedProduct.description || "No description available."}</p>
+
+                    <div className="space-y-3 mb-6">
+                      {selectedProduct.category && (
+                        <div className="flex items-center">
+                          <span className="text-sm font-medium text-gray-700 w-20">Category:</span>
+                          <span className="bg-purple-100 text-purple-800 text-xs font-medium px-2 py-1 rounded-full">
+                            {selectedProduct.category}
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex items-center">
+                        <span className="text-sm font-medium text-gray-700 w-20">Stock:</span>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          selectedProduct.stock > 10 
+                            ? "bg-green-100 text-green-800" 
+                            : selectedProduct.stock > 0 
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-red-100 text-red-800"
+                        }`}>
+                          {selectedProduct.stock || 0} available
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => handleAddToCart(selectedProduct)}
+                        className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 flex items-center justify-center shadow-lg hover:shadow-xl"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                        </svg>
+                        Add to Cart
+                      </button>
+                      
+                      <Link
+                        href={`/products/${selectedProduct._id}`}
+                        className="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold py-3 px-6 rounded-xl transition duration-300 flex items-center justify-center shadow-md hover:shadow-lg"
+                      >
+                        View Details
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>
