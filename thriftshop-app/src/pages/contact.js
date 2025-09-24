@@ -26,15 +26,28 @@ export default function Contact() {
     setIsSubmitting(true);
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      showSuccess("Thank you for your message! We'll get back to you within 24 hours.");
-      setFormData({ name: "", email: "", subject: "", message: "" });
+      const res = await fetch("/api/contact/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        showSuccess("Thank you for your message! We'll get back to you within 24 hours.");
+        setFormData({ name: "", email: "", subject: "", message: "" });
+      } else {
+        showError(data.error || "There was an error sending your message.");
+      }
     } catch (error) {
-      showError("There was an error sending your message. Please try again.");
+      console.error("Error submitting contact form:", error);
+      showError("Network error. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
+
 
   const contactMethods = [
     {
@@ -135,7 +148,7 @@ export default function Contact() {
                       value={formData.name}
                       onChange={handleChange}
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-300"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-300 text-gray-700"
                       placeholder="Your full name"
                     />
                   </div>
@@ -150,7 +163,7 @@ export default function Contact() {
                       value={formData.email}
                       onChange={handleChange}
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-300"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-300 text-gray-700"
                       placeholder="your.email@example.com"
                     />
                   </div>
@@ -166,7 +179,7 @@ export default function Contact() {
                     value={formData.subject}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-300"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-300 text-gray-700"
                   >
                     <option value="">Select a subject</option>
                     <option value="general">General Inquiry</option>
@@ -188,7 +201,7 @@ export default function Contact() {
                     onChange={handleChange}
                     required
                     rows={6}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-300"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-300 text-gray-700"
                     placeholder="Tell us how we can help you..."
                   />
                 </div>

@@ -6,6 +6,7 @@ import { useNotification } from '../../context/NotificationContext';
 import UsersTab from "./usersTab";
 import AnalyticsTab from "./analyticsTab";
 import ProductsTab from "./productsTab";
+import ContactTab from "./contactTab";
 
 export default function AdminDashboard() {
   const { data: session } = useSession();
@@ -127,6 +128,16 @@ export default function AdminDashboard() {
               >
                 Analytics
               </button>
+              <button
+                onClick={() => setActiveTab("contact")}
+                className={`py-4 px-6 text-center font-medium text-sm border-b-2 transition duration-300 ${
+                  activeTab === "contact"
+                    ? "border-purple-600 text-purple-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
+              >
+                Contact
+              </button>
             </nav>
           </div>
 
@@ -153,7 +164,7 @@ export default function AdminDashboard() {
               />
             )}
 
-            {activeTab === "analytics" && <AnalyticsTab />}
+            {activeTab === "contact" && <ContactTab />}
           </div>
         </div>
       </div>
